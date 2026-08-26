@@ -1,0 +1,8 @@
+{
+  "key": "syncDataXrayFilesPostgres",
+  "name": "Sync Data X-Ray Files to Postgres (Nightly)",
+  "description": "Mirror every file indexed by Data X-Ray into a Postgres schema (one wide 'files' table with a column per classification), refreshed automatically every night.",
+  "theme": "theme-1",
+  "icon": "glyphicon-hdd",
+  "businessItemResourceType": "GLOBAL"
+}

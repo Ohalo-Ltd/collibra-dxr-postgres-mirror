@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  syncDataXrayFilesPostgres workflow
+  ==================================
+  Mirrors EVERY file indexed by Data X-Ray into a Postgres schema: streams
+  GET /api/v1/files (NDJSON) into Postgres from inside a Collibra script task,
+  adds one column per Data X-Ray classification ("{uuid}_{name}") and per
+  external metadata field, upserts by fileId and hard-deletes rows for files
+  Data X-Ray no longer returns. Postgres is reached over plain JDBC
+  (org.postgresql.Driver ships with Collibra) — built for ON-PREMISE
+  Collibra + Postgres. Collibra *Cloud* cannot use it: its egress proxy is
+  HTTP(S)-only and a raw Postgres connection times out (verified 2026-08).
+
+  Triggered by a timer start event (cron "0 0 3 * * ?" — daily at 03:00 in the
+  Collibra server timezone, after the 02:00 classification sync and the 02:30
+  file-asset sync). No user initiates it, so the script never depends on
+  `users`/`item`/`initiator`, and it ends cleanly on any failure rather than
+  throwing: a timer workflow that fails before its first async task is retried
+  3× by Collibra and then permanently disabled until redeployment. The script
+  task is async so the work runs on the job executor rather than inside the
+  timer firing.
+
+  Configuration variables (hidden admin settings on the workflow settings page;
+  Collibra requires a non-empty default, hence the sentinel placeholders):
+    dataxrayUrl / dataxrayAuthToken  — same values as the other Data X-Ray workflows
+    pgHost / pgPort / pgDatabase / pgSchema / pgUser / pgPassword / pgSslMode
+  Script placeholders of the form {script:filename.groovy} are resolved by
+  deploy.py before the BPMN is packaged.
+-->
+<definitions xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL"
+             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+             xmlns:flowable="http://flowable.org/bpmn"
+             xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
+             xmlns:omgdc="http://www.omg.org/spec/DD/20100524/DC"
+             xmlns:omgdi="http://www.omg.org/spec/DD/20100524/DI"
+             xmlns:design="http://flowable.org/design"
+             typeLanguage="http://www.w3.org/2001/XMLSchema"
+             expressionLanguage="http://www.w3.org/1999/XPath"
+             targetNamespace="http://www.collibra.com/apiv2"
+             exporter="Flowable Design"
+             exporterVersion="2025.1.09"
+             design:palette="flowable-core-process-palette">
+  <process id="syncDataXrayFilesPostgres"
+           name="Sync Data X-Ray Files to Postgres (Nightly)"
+           isExecutable="true">
+    <extensionElements>
+      <design:stencilid><![CDATA[BPMNDiagram]]></design:stencilid>
+    </extensionElements>
+    <startEvent id="startEvent" name="Start">
+      <extensionElements>
+        <flowable:formProperty id="dataxrayUrl" name="Data X-Ray Base URL" type="string" variable="dataxrayUrl" default="&lt;paste Data X-Ray base URL here&gt;" readable="false" required="true"/>
+        <flowable:formProperty id="dataxrayAuthToken" name="Data X-Ray Auth Token (Bearer)" type="string" variable="dataxrayAuthToken" default="&lt;paste Data X-Ray Bearer token here&gt;" readable="false" required="true"/>
+        <flowable:formProperty id="pgHost" name="Postgres Host" type="string" variable="pgHost" default="&lt;paste Postgres host here&gt;" readable="false" required="true"/>
+        <flowable:formProperty id="pgPort" name="Postgres Port" type="string" variable="pgPort" default="5432" readable="false" required="true"/>
+        <flowable:formProperty id="pgDatabase" name="Postgres Database" type="string" variable="pgDatabase" default="dxr" readable="false" required="true"/>
+        <flowable:formProperty id="pgSchema" name="Postgres Schema" type="string" variable="pgSchema" default="dxr" readable="false" required="true"/>
+        <flowable:formProperty id="pgUser" name="Postgres User" type="string" variable="pgUser" default="&lt;paste Postgres user here&gt;" readable="false" required="true"/>
+        <flowable:formProperty id="pgPassword" name="Postgres Password" type="string" variable="pgPassword" default="&lt;paste Postgres password here&gt;" readable="false" required="true"/>
+        <flowable:formProperty id="pgSslMode" name="Postgres SSL Mode (disable | require | verify-full)" type="string" variable="pgSslMode" default="require" readable="false" required="true"/>
+        <design:stencilid><![CDATA[StartTimerEvent]]></design:stencilid>
+      </extensionElements>
+      <timerEventDefinition>
+        <timeCycle flowable:type="cron">0 0 3 * * ?</timeCycle>
+      </timerEventDefinition>
+    </startEvent>
+    <scriptTask id="syncFilesTask"
+                name="Sync Files to Postgres"
+                scriptFormat="groovy"
+                flowable:async="true"
+                flowable:autoStoreVariables="false">
+      <extensionElements>
+        <design:stencilid><![CDATA[ScriptTask]]></design:stencilid>
+      </extensionElements>
+      <script>{{script:sync_files_postgres.groovy}}</script>
+    </scriptTask>
+    <endEvent id="endEvent" name="End">
+      <extensionElements>
+        <design:stencilid><![CDATA[EndNoneEvent]]></design:stencilid>
+      </extensionElements>
+    </endEvent>
+    <sequenceFlow id="flow1" sourceRef="startEvent" targetRef="syncFilesTask">
+      <extensionElements>
+        <design:stencilid><![CDATA[SequenceFlow]]></design:stencilid>
+      </extensionElements>
+    </sequenceFlow>
+    <sequenceFlow id="flow2" sourceRef="syncFilesTask" targetRef="endEvent">
+      <extensionElements>
+        <design:stencilid><![CDATA[SequenceFlow]]></design:stencilid>
+      </extensionElements>
+    </sequenceFlow>
+  </process>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_syncDataXrayFilesPostgres">
+    <bpmndi:BPMNPlane bpmnElement="syncDataXrayFilesPostgres" id="BPMNPlane_syncDataXrayFilesPostgres">
+      <bpmndi:BPMNShape bpmnElement="startEvent" id="BPMNShape_startEvent">
+        <omgdc:Bounds x="120" y="255" width="30" height="30"/>
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds x="115" y="290" width="40" height="14"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="syncFilesTask" id="BPMNShape_syncFilesTask">
+        <omgdc:Bounds x="210" y="230" width="140" height="80"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="endEvent" id="BPMNShape_endEvent">
+        <omgdc:Bounds x="415" y="256" width="28" height="28"/>
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds x="412" y="290" width="34" height="14"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge bpmnElement="flow1" id="BPMNEdge_flow1">
+        <omgdi:waypoint x="150" y="270"/>
+        <omgdi:waypoint x="210" y="270"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow2" id="BPMNEdge_flow2">
+        <omgdi:waypoint x="350" y="270"/>
+        <omgdi:waypoint x="415" y="270"/>
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</definitions>
