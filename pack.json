@@ -1,0 +1,6 @@
+{
+  "name": "collibra-dxr-postgres-mirror",
+  "harnessRef": "v2.0.0",
+  "workflows": ["sync-data-xray-files-postgres"],
+  "bundle": { "extra": ["docs"] }
+}

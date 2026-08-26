@@ -1,0 +1,61 @@
+name: Bundle Postgres Mirror Workflow ZIP
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+
+permissions:
+  contents: write          # required for `gh release upload`
+
+jobs:
+  bundle:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Read pinned harness version
+        id: pack
+        run: |
+          echo "harness_ref=$(jq -r .harnessRef pack.json)" >> "$GITHUB_OUTPUT"
+          echo "name=$(jq -r .name pack.json)" >> "$GITHUB_OUTPUT"
+
+      # The build tooling (deploy.py) lives in the collibra-workflower harness.
+      # It is an internal repo, so github.token cannot read it: HARNESS_READ_TOKEN
+      # must be a fine-grained PAT (or GitHub App token) with Contents: read on
+      # Ohalo-Ltd/collibra-workflower.
+      - name: Check out the harness at the pinned tag
+        uses: actions/checkout@v4
+        with:
+          repository: Ohalo-Ltd/collibra-workflower
+          ref: ${{ steps.pack.outputs.harness_ref }}
+          token: ${{ secrets.HARNESS_READ_TOKEN }}
+          path: harness
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install harness dependencies
+        run: pip install -r harness/requirements.txt
+
+      - name: Build the bundle
+        env:
+          VERSION: ${{ github.event_name == 'release' && github.event.release.tag_name || format('dev-{0}', github.sha) }}
+        run: |
+          set -euo pipefail
+          python harness/deploy.py bundle --pack . --version "$VERSION" --out dist
+          ls -l dist
+
+      - name: Attach bundle to the release
+        if: github.event_name == 'release'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release upload "${{ github.event.release.tag_name }}" dist/*.zip --clobber
+
+      - name: Upload bundle as build artifact (manual runs)
+        if: github.event_name == 'workflow_dispatch'
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ steps.pack.outputs.name }}
+          path: dist/*.zip
