@@ -22,7 +22,7 @@ The Action needs the `HARNESS_READ_TOKEN` repository secret (read access to the 
 
 ## Developing
 
-This repo is a *workflow pack* — sources and docs only. Build/deploy tooling, Groovy IDE stubs and Collibra reference docs live in the harness, which mounts this repo as a git submodule at `packs/dxr-postgres-mirror`:
+This repo is a *workflow pack* — sources and docs only. Build/deploy tooling, Groovy IDE stubs and Collibra reference docs live in the `collibra-workflower` harness, which is currently **Ohalo-internal** and mounts this repo as a git submodule at `packs/dxr-postgres-mirror`. External contributors: see [CONTRIBUTING.md](CONTRIBUTING.md). Ohalo developers:
 
 ```bash
 git clone --recurse-submodules git@github.com:Ohalo-Ltd/collibra-workflower.git
@@ -35,3 +35,7 @@ python deploy.py bundle --pack packs/dxr-postgres-mirror
 ```
 
 To exercise the script against a real Postgres without Collibra, use the harness's `tools/run_script_locally.groovy` (config variables come from `WF_<name>` env vars). Commit and push from inside `packs/dxr-postgres-mirror`, then bump the submodule pointer in the harness. Data X-Ray and Collibra specifics for this workflow are in [CLAUDE.md](CLAUDE.md).
+
+## License
+
+Source-available under the [Ohalo Source-Available License](LICENSE) — free to inspect and to deploy for organisations licensed for Data X-Ray; not open source.

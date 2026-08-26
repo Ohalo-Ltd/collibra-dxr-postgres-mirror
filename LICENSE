@@ -1,0 +1,46 @@
+Ohalo Source-Available License
+==============================
+
+Copyright (c) 2026 Ohalo Ltd. All rights reserved.
+
+This repository is made publicly viewable so that customers, prospects and
+partners of Ohalo Ltd can inspect, evaluate and audit the software before and
+after deploying it. It is NOT open-source software.
+
+Permitted use
+-------------
+Subject to the conditions below, Ohalo Ltd grants you a non-exclusive,
+non-transferable, royalty-free licence to:
+
+1. view, download and study the source code and documentation;
+2. deploy the software, unmodified or with configuration-only changes, into a
+   Collibra environment operated by or for an organisation that holds a valid
+   licence or subscription for Ohalo Data X-Ray;
+3. make internal modifications strictly necessary to operate the software in
+   such an environment.
+
+Conditions
+----------
+- You may not redistribute, sublicense, sell, offer as a service, or publish
+  the software or derivative works, in source or compiled form, other than
+  within the licensed organisation.
+- You must retain this notice and all copyright notices in every copy.
+- Contributions you submit to Ohalo Ltd (for example as pull requests) are
+  licensed to Ohalo Ltd under this same licence together with the right for
+  Ohalo Ltd to relicense and redistribute them.
+
+Disclaimer
+----------
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT. IN NO EVENT SHALL
+OHALO LTD BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN
+ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
+WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+Trademarks
+----------
+"Ohalo" and "Data X-Ray" are trademarks of Ohalo Ltd. "Collibra" is a
+trademark of Collibra NV. No trademark rights are granted by this licence.
+
+Questions about licensing: support@ohalo.co
