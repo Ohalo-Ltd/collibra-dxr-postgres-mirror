@@ -5,6 +5,7 @@ A single [Collibra](https://www.collibra.com/) workflow, **Sync Data X-Ray Files
 It is independent of the [Data X-Ray ↔ Collibra workflow bundle](https://github.com/Ohalo-Ltd/collibra-dxr-workflows): nothing here reads or writes Collibra assets, and no shared setup workflow is required.
 
 - **Deploying?** Take the ZIP from the latest release and follow [`docs/deployment-guide.md`](docs/deployment-guide.md) — all through the Collibra UI.
+- **Querying it?** [`docs/programmers-guide.md`](docs/programmers-guide.md) explains how to look up extractors, annotators and labels via the Data X-Ray public API and in the mirrored Postgres schema (KQL, SQL, helper scripts).
 - **Changing it?** See [Developing](#developing).
 
 ## Releasing
@@ -14,6 +15,7 @@ It is independent of the [Data X-Ray ↔ Collibra workflow bundle](https://githu
 ```
 sync-data-xray-files-postgres.zip
 deployment-guide.md
+programmers-guide.md
 acceptance-criteria.md
 images/postgres-sync-variables.png
 ```
