@@ -2,7 +2,7 @@
 
 A one-workflow *pack* (`sync-data-xray-files-postgres`) built and deployed with the [collibra-workflower](https://github.com/Ohalo-Ltd/collibra-workflower) harness — see that repo's CLAUDE.md for packaging format, configuration-variable rules, redeploy semantics and Groovy runtime facts. This file holds only what is specific to this workflow.
 
-Layout: `pack.json` (bundle name, pinned `harnessRef`, workflow list), `workflows/sync-data-xray-files-postgres/`, `docs/` (deployment guide, acceptance criteria, screenshot — all shipped in the bundle), `workflow-registry.json` (dev-instance definition UUID). Develop from the harness checkout (`packs/dxr-postgres-mirror`); release with `gh release create` here.
+Layout: `pack.json` (bundle name, pinned `harnessRef`, workflow list), `workflows/sync-data-xray-files-postgres/`, `docs/` (deployment guide, programmer's guide for querying extractors/annotators via the DXR API and the mirror, acceptance criteria, screenshot — all shipped in the bundle), `workflow-registry.json` (dev-instance definition UUID). Develop from the harness checkout (`packs/dxr-postgres-mirror`); release with `gh release create` here.
 
 **Deliberately decoupled from the Data X-Ray ↔ Collibra bundle** (`collibra-dxr-workflows`): this workflow touches no Collibra assets and is not registered in that bundle's `configure-data-xray-workflows` start-role stamping. Start roles are set by the admin in the UI (deployment guide, Step 4); a fresh import is unrestricted, which is acceptable because the workflow is timer-started.
 
