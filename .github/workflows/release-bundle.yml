@@ -12,7 +12,7 @@ jobs:
   bundle:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Read pinned harness version
         id: pack
@@ -25,7 +25,7 @@ jobs:
       # must be a fine-grained PAT (or GitHub App token) with Contents: read on
       # Ohalo-Ltd/collibra-workflower.
       - name: Check out the harness at the pinned tag
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           repository: Ohalo-Ltd/collibra-workflower
           ref: ${{ steps.pack.outputs.harness_ref }}
