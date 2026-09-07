@@ -144,7 +144,10 @@ Lists the typed metadata *fields* Data X-Ray knows about, as
 `{source, metaField, type}` with `source` one of `metadata`, `dxr`, `ai`,
 `external`. This is **not** where extractors live (they're classifications,
 above). You need it only for `source: external` fields supplied by plugin
-connectors, which the mirror turns into `"external_{metaField}"` columns.
+connectors, which the mirror turns into `external_…` columns on `dxr.files`.
+Those names go through the same sanitising, truncation and de-duplication as
+classification columns, so read the exact name from
+`dxr.metadata_fields.column_name` rather than constructing it.
 
 ```bash
 curl -sS -H "Authorization: Bearer $DXR_TOKEN" "$DXR_URL/api/v1/metadata-fields" \
@@ -544,14 +547,17 @@ def files(kql=None):
 
 def write_csv(rows, header, path):
     out = open(path, "w", newline="") if path else sys.stdout
-    w = csv.writer(out)
-    w.writerow(header)
-    n = 0
-    for row in rows:
-        w.writerow(row)
-        n += 1
+    try:
+        w = csv.writer(out)
+        w.writerow(header)
+        n = 0
+        for row in rows:
+            w.writerow(row)
+            n += 1
+    finally:
+        if path:
+            out.close()
     if path:
-        out.close()
         print(f"{n} rows → {path}", file=sys.stderr)
 
 
@@ -578,8 +584,12 @@ def main(argv):
                   argv[3] if len(argv) > 3 else None)
     elif cmd == "files":
         out = open(argv[3], "w") if len(argv) > 3 else sys.stdout
-        for f in files(argv[2]):
-            out.write(json.dumps(f) + "\n")
+        try:
+            for f in files(argv[2]):
+                out.write(json.dumps(f) + "\n")
+        finally:
+            if out is not sys.stdout:
+                out.close()
     else:
         sys.exit(__doc__)
 
@@ -654,7 +664,7 @@ is the exception: it streams bare objects, one per line, with no envelope.
 | `labels[]` | one `boolean` column per label **and** `labels` (jsonb) |
 | `annotators[]` | one `integer` column per annotator and per domain **and** `annotations` (jsonb, hits only) |
 | `extractedMetadata[]` | one `text` column per extractor |
-| `externalMetadata[]` | one `external_{name}` column per field |
+| `externalMetadata[]` | one `external_…` column per field (exact name in `dxr.metadata_fields.column_name`) |
 | — | `first_seen_at`, `last_seen_at`, `sync_run_id` (bookkeeping) |
 
 ### Further reading
